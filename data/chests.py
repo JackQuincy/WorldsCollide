@@ -398,7 +398,10 @@ class Chests():
             self.remove_excluded_items()
 
         if self.args.chest_monsters_shuffle:
-            self.shuffle([Chest.MONSTER])
+            if self.args.chest_contents_shuffle_by_world_random:
+                self.shuffle_by_world([Chest.MONSTER])
+            else
+                self.shuffle([Chest.MONSTER])
 
         # add randomized MIABs after other contents randomization/shuffle is complete
         if self.args.chest_random_monsters_enemy > 0:

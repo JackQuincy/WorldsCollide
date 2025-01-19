@@ -201,14 +201,14 @@ class Chests():
         import copy
         chests_shuffle = list()
         for index in indices:
-            chest = copy.deepcopy(self.chests[index])
+            chest = copy.deepcopy(self.all_chests[index])
             if chest.type in types:
                 chests_shuffle.append(chest)
         random.shuffle(chests_shuffle)
 
         shuffle_index = 0
         for index in indices:
-            chest = self.chests[index]
+            chest = self.all_chests[index]
             if chest.type in types:
                 shuffled_chest = chests_shuffle[shuffle_index]
                 shuffle_index += 1

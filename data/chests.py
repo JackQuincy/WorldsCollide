@@ -400,7 +400,7 @@ class Chests():
         if self.args.chest_monsters_shuffle:
             if self.args.chest_contents_shuffle_by_world_random:
                 self.shuffle_by_world([Chest.MONSTER])
-            else
+            else:
                 self.shuffle([Chest.MONSTER])
 
         # add randomized MIABs after other contents randomization/shuffle is complete

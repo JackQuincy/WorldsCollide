@@ -17,10 +17,22 @@ class ImperialBase(Event):
         SOLDIERS_BATTLE_ON_TOUCH = 0xb25b9
 
         space = Reserve(0xb25d6, 0xb25f8, "imperial base entrance event conditions", field.NOP())
+        space.add_label("CLEAR_DOOR", 0xb25f0)
         if self.args.character_gating:
             space.write(
                 #field.BranchIfEventBitSet(event_bit.character_recruited(self.events["Sealed Gate"].character_gate()), SOLDIERS_BATTLE_ON_TOUCH),
                 field.ReturnIfEventBitSet(event_bit.character_recruited(self.events["Sealed Gate"].character_gate())),
+            )
+        # if location_gating2, check to see if the Imperial Base Treasure objective has been met
+        elif self.args.location_gating2:
+            # Always clear the Treasure Room Door Locked NPC 
+            # If Unlocked Imperial Base Treasure bit is set (objective complete), return w/o setting the door NPC bit
+            # Otherwise set door NPC bit then return (objective is not complete)
+            space.write(
+                field.ClearEventBit(npc_bit.TREASURE_ROOM_DOOR_IMPERIAL_BASE),
+                field.ReturnIfEventBitSet(event_bit.UNLOCKED_IMP_BASE_TREASURE),
+                field.SetEventBit(npc_bit.TREASURE_ROOM_DOOR_IMPERIAL_BASE),
+                field.Return(),
             )
         else:
             space.write(

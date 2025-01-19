@@ -15,9 +15,15 @@ class FloatingContinent(Event):
         return self.characters.SHADOW
 
     def init_rewards(self):
-        self.reward1 = self.add_reward(RewardType.CHARACTER | RewardType.ESPER)
-        self.reward2 = self.add_reward(RewardType.ESPER | RewardType.ITEM)
-        self.reward3 = self.add_reward(RewardType.CHARACTER | RewardType.ESPER)
+        # if location gating mode, "rewards" are items, but they don't go in your inventory...need to give a reward for game's logic
+        if self.args.location_gating1:
+            self.reward1 = self.add_reward(RewardType.ITEM)
+            self.reward2 = self.add_reward(RewardType.ITEM)
+            self.reward3 = self.add_reward(RewardType.ITEM)
+        else:
+            self.reward1 = self.add_reward(RewardType.CHARACTER | RewardType.ESPER)
+            self.reward2 = self.add_reward(RewardType.ESPER | RewardType.ITEM)
+            self.reward3 = self.add_reward(RewardType.CHARACTER | RewardType.ESPER)
 
     def mod(self):
         self.shadow_leaves_mod()
@@ -31,33 +37,50 @@ class FloatingContinent(Event):
         self.ground_shadow_npc = self.maps.get_npc(0x18a, self.ground_shadow_npc_id)
 
         self.ground_reward_position_mod()
-        if self.reward1.type == RewardType.CHARACTER:
-            self.ground_character_mod(self.reward1.id)
-        elif self.reward1.type == RewardType.ESPER:
-            self.ground_esper_mod(self.reward1.id)
+        # if not location_gating1, give ground reward
+        if not self.args.location_gating1:
+            if self.reward1.type == RewardType.CHARACTER:
+                self.ground_character_mod(self.reward1.id)
+            elif self.reward1.type == RewardType.ESPER:
+                self.ground_esper_mod(self.reward1.id)
+        # else location_gating1, use ground Kefka mod
+        else:
+            self.ground_kefka_mod()
         self.finish_ground_check()
 
         self.save_point_hole_mod()
         self.airship_return_mod()
         self.atma_battle_mod()
 
-        if self.reward2.type == RewardType.ESPER:
-            self.atma_esper_mod(self.reward2.id)
-        elif self.reward2.type == RewardType.ITEM:
-            self.atma_item_mod(self.reward2.id)
+        # if not location_gating1, give Atma reward
+        if not self.args.location_gating1:
+            if self.reward2.type == RewardType.ESPER:
+                self.atma_esper_mod(self.reward2.id)
+            elif self.reward2.type == RewardType.ITEM:
+                self.atma_item_mod(self.reward2.id)
+        # else, location_gating1, give nothing
+        else:
+            self.atma_esper_item_mod(field.NOP())
 
         self.statues_scene_mod()
         self.timer_mod()
         self.nerapa_battle_mod()
 
-        if self.reward3.type == RewardType.CHARACTER:
-            self.escape_character_mod(self.reward3.id)
-        elif self.reward3.type == RewardType.ESPER:
-            self.escape_esper_mod(self.reward3.id)
+        # if not location_gating1, give Escape reward
+        if not self.args.location_gating1:
+            if self.reward3.type == RewardType.CHARACTER:
+                self.escape_character_mod(self.reward3.id)
+            elif self.reward3.type == RewardType.ESPER:
+                self.escape_esper_mod(self.reward3.id)
+        # else, location_gating1, use Kefka mod
+        else:
+            self.escape_kefka_mod()
 
-        self.log_reward(self.reward1)
-        self.log_reward(self.reward2)
-        self.log_reward(self.reward3)
+        # if not location_gating1, don't log rewards
+        if not self.args.location_gating1:
+            self.log_reward(self.reward1)
+            self.log_reward(self.reward2)
+            self.log_reward(self.reward3)
 
     def shadow_leaves_mod(self):
         # remove shadow from party at floating continent (if return to airship or after atma)
@@ -210,6 +233,46 @@ class FloatingContinent(Event):
             field.Branch(space.end_address + 1),
         )
 
+    # when reward1 is an item
+    def ground_item_mod(self, item):
+        # use sparkle as NPC for item
+        self.ground_shadow_npc.sprite = 106
+        self.ground_shadow_npc.palette = 6
+        self.ground_shadow_npc.split_sprite = 1
+        self.ground_shadow_npc.direction = direction.DOWN
+
+        space = Reserve(0xad9b1, 0xad9ed, "floating continent add item on ground", field.NOP())
+        space.write(
+            field.AddItem(item),
+            field.Dialog(self.items.get_receive_dialog(item)),
+            field.DeleteEntity(self.ground_shadow_npc_id),
+            field.Branch(space.end_address + 1),
+        )
+
+    # when location_gating1, FC Arrive is Kefka animated
+    def ground_kefka_mod(self):
+        # use Kefka's sprite
+        self.ground_shadow_npc.sprite = 21
+        self.ground_shadow_npc.palette = 3
+        self.ground_shadow_npc.direction = direction.UP
+        # Animate Kefka NPC when intereacted with
+        space = Reserve(0xad9b1, 0xad9ed, "floating continent add item on ground", field.NOP())
+        space.write(
+            field.EntityAct(self.ground_shadow_npc_id, True,
+                field_entity.AnimateStandingHeadDown(),
+                field_entity.Pause(2),
+                field_entity.AnimateSurprised(),
+                field_entity.Pause(8),
+                field_entity.AnimateFrontHandsUp(),
+                field_entity.Pause(2),
+                field_entity.SetSpeed(field_entity.Speed.NORMAL),
+                field_entity.DisableWalkingAnimation(),
+                field_entity.Move(direction.UP, 8),
+            ),
+            field.DeleteEntity(self.ground_shadow_npc_id),
+            field.Branch(space.end_address + 1),
+        )
+
     def finish_ground_check(self):
         src = [
             Read(0xad9ee, 0xad9f2), # clear ground npc bit, set shadow recruited bit, update party leader
@@ -275,6 +338,7 @@ class FloatingContinent(Event):
         ])
 
     def statues_scene_mod(self):
+        from data.bosses import name_pack
         kefka_npc_id = 0x11
         kefka_npc = self.maps.get_npc(0x18a, kefka_npc_id)
         kefka_npc.x = 60
@@ -285,7 +349,7 @@ class FloatingContinent(Event):
         gestahl_npc.x = 57
         gestahl_npc.y = 7
 
-        space = Reserve(0xadd22, 0xaddb3, "floating continent statues move camera", field.NOP())
+        space = Reserve(0xadd22, 0xadd42, "floating continent statues move camera", field.NOP())
         space.write(
             # first create the lights i deleted
             field.CreateEntity(0x1d),
@@ -305,9 +369,11 @@ class FloatingContinent(Event):
                 field_entity.SetSpeed(field_entity.Speed.SLOW),
                 field_entity.Move(direction.UP, 5),
             ),
+            # branch to statue glow animation
+            field.Branch(0xaddb3),
         )
 
-        space = Reserve(0xaddf0, 0xade0c, "floating continent statues party approach kefka", field.NOP())
+        space = Reserve(0xaddf0, 0xaddff, "floating continent statues party approach kefka", field.NOP())
         space.write(
             field.EntityAct(field_entity.CAMERA, False,
                 field_entity.Move(direction.DOWN, 3),
@@ -321,6 +387,83 @@ class FloatingContinent(Event):
             field.EntityAct(gestahl_npc_id, True,
                 field_entity.Turn(direction.DOWN),
             ),
+        )
+        space = Reserve(0xade00, 0xade0b, "floating continent gauntlet branch code", field.NOP())
+        if self.args.location_gating2:
+            space.write(
+                # branch to boss Gauntlet code
+                field.Branch(0xadd43),
+            )
+
+        # Gauntlet bosses
+        boss_slots = [
+            name_pack["Doom"],
+            name_pack["Goddess"],
+            name_pack["Poltrgeist"],
+        ]
+        # shuffle their order
+        import random
+        random.shuffle(boss_slots)
+        space = Reserve(0xadd43, 0xaddb3, "floating continent boss gauntlet", field.NOP())
+        space.write(
+            # add Kefka laugh
+            field.PlaySoundEffect(205),
+            field.Pause(1),
+            field.EntityAct(kefka_npc_id, True,
+                field_entity.AnimateFingerUp(),
+            ),
+            field.Pause(0.25),
+            field.EntityAct(kefka_npc_id, True,
+                field_entity.AnimateFingerWag(),
+            ),
+            field.Pause(0.25),
+            field.EntityAct(kefka_npc_id, True,
+                field_entity.AnimateFingerUp(),
+            ),
+            field.Pause(0.25),
+            field.EntityAct(kefka_npc_id, True,
+                field_entity.AnimateFingerWag(),
+            ),
+            # Play Fierce Battle song
+            field.StartSong(0x33),
+            # Continue playing it during fights
+            field.SetEventBit(event_bit.CONTINUE_MUSIC_DURING_BATTLE),
+            field.InvokeBattle(boss_slots[0]),
+            field.FadeInScreen(),
+            field.WaitForFade(),
+            # Call statue glow animation x3
+            field.MultipleCalls(3, 0xae46f),
+            field.Pause(1),
+            field.EntityAct(kefka_npc_id, True,
+                field_entity.AnimateFingerUp(),
+            ),
+            field.Pause(0.25),
+            field.EntityAct(kefka_npc_id, True,
+                field_entity.AnimateFingerWag(),
+            ),
+            field.Pause(0.25),
+            field.InvokeBattle(boss_slots[1]),
+            field.FadeInScreen(),
+            field.WaitForFade(),
+            # Call statue glow animation x3
+            field.MultipleCalls(3, 0xae46f),
+            field.Pause(1),
+            field.EntityAct(kefka_npc_id, True,
+                field_entity.AnimateFingerUp(),
+            ),
+            field.Pause(0.25),
+            field.EntityAct(kefka_npc_id, True,
+                field_entity.AnimateFingerWag(),
+            ),
+            field.Pause(0.25),
+            field.InvokeBattle(boss_slots[2]),
+            field.FadeInScreen(),
+            field.WaitForFade(),
+            field.Pause(0.5),
+            # Allow other songs to start playing again
+            field.ClearEventBit(event_bit.CONTINUE_MUSIC_DURING_BATTLE),
+            # branch to finish Catastrophe cutcscene
+            field.Branch(0xade0f),
         )
 
         space = Reserve(0xade0f, 0xade11, "floating continent statues gestahl has goose bumps dialog", field.NOP())
@@ -483,4 +626,49 @@ class FloatingContinent(Event):
             field.LoadMap(0x06, direction.DOWN, default_music = True, x = 16, y = 6, fade_in = True, entrance_event = True),
             field.AddEsper(esper),
             field.Dialog(self.espers.get_receive_esper_dialog(esper)),
+        ])
+
+    # routine to reward an item upon FC Escape complete
+    def escape_item_mod(self, item):
+        # use guest character to give item reward
+        guest_char_id = 0x0f
+        guest_char = self.maps.get_npc(0x189, guest_char_id)
+        random_sprite = self.characters.get_random_esper_item_sprite()
+        random_sprite_palette = self.characters.get_palette(random_sprite)
+
+        space = Reserve(0xa579d, 0xa57b2, "floating continent wait dialogs", field.NOP())
+        space.write(
+            field.SetSprite(guest_char_id, random_sprite),
+            field.SetPalette(guest_char_id, random_sprite_palette),
+            field.RefreshEntities(),
+        )
+        # add item to inventory & show dialog
+        self.escape_mod(guest_char_id, [
+            field.DeleteEntity(guest_char_id),
+            field.RefreshEntities(),
+            field.LoadMap(0x06, direction.DOWN, default_music = True, x = 16, y = 6, fade_in = True, entrance_event = True),
+            field.AddItem(item),
+            field.Dialog(self.items.get_receive_dialog(item)),
+        ])
+
+    # routine for location_gating1 FC Escape
+    def escape_kefka_mod(self):
+        guest_char_id = 0x0f
+        guest_char = self.maps.get_npc(0x189, guest_char_id)
+        # use Kefka sprite
+        random_sprite = 21
+        random_sprite_palette = 3
+
+        space = Reserve(0xa579d, 0xa57b2, "floating continent wait dialogs", field.NOP())
+        space.write(
+            field.SetSprite(guest_char_id, random_sprite),
+            field.SetPalette(guest_char_id, random_sprite_palette),
+            field.RefreshEntities(),
+        )
+
+        # call escape mod, but don't add anything to inventory
+        self.escape_mod(guest_char_id, [
+            field.DeleteEntity(guest_char_id),
+            field.RefreshEntities(),
+            field.LoadMap(0x06, direction.DOWN, default_music = True, x = 16, y = 6, fade_in = True, entrance_event = True),
         ])

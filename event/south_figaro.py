@@ -8,8 +8,12 @@ class SouthFigaro(Event):
         return self.characters.CELES
 
     def init_rewards(self):
-        if self.args.no_free_characters_espers:
+        # if -nfce flag or Location Gating mode, item only reward
+        if self.args.no_free_characters_espers or self.args.location_gating1:
             self.reward = self.add_reward(RewardType.ITEM)
+        # else if Search For Friends mode, esper/item reward only
+        elif self.args.location_gating2:
+            self.reward = self.add_reward(RewardType.ESPER | RewardType.ITEM)
         else:
             self.reward = self.add_reward(RewardType.CHARACTER | RewardType.ESPER | RewardType.ITEM)
 
@@ -56,6 +60,12 @@ class SouthFigaro(Event):
         if self.args.character_gating:
             space.write(
                 field.ReturnIfEventBitSet(event_bit.character_recruited(self.character_gate())),
+                field.HideEntity(self.celes_npc_id),
+            )
+        # if location gating mode, only show Celes if WOR bit clear (in WOB)
+        elif self.args.location_gating1:
+            space.write(
+                field.ReturnIfEventBitClear(event_bit.IN_WOR),
                 field.HideEntity(self.celes_npc_id),
             )
         space.write(

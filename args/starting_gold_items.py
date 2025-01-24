@@ -79,6 +79,11 @@ def process(args):
                 args.parser.print_usage()
                 print(f"{sys.argv[0]}: error: start-items: '{max}' is an invalid count for an item. It must be between 1-99")
                 sys.exit(1)
+            if max < min:
+                import sys
+                args.parser.print_usage()
+                print(f"{sys.argv[0]}: error: start-items: max:'{max}' must be greater than the min:'{min}'")
+
 
             item_count = random.sample(range(min, max + 1), 1)[0]
             item = Item(item_id, item_count)

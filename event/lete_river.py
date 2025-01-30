@@ -3,6 +3,12 @@ from event.event import *
 class LeteRiver(Event):
     BATTLE_1_INVOKE_ADDR = 0xb0498 # the event code that initiates fixed battle 1
     BATTLE_2_INVOKE_ADDR = 0xb04a1 # the event code that initiated fixed battle 2
+
+    def __init__(self, events, rom, args, dialogs, characters, items, maps, enemies, espers, shops, warps):
+        super().__init__(events, rom, args, dialogs, characters, items, maps, enemies, espers, shops, warps)
+        self.DOOR_RANDOMIZE = args.door_randomize_all or args.door_randomize_crossworld \
+                              or args.door_randomize_dungeon_crawl or args.door_randomize_lete_river
+
     def name(self):
         return "Lete River"
 
@@ -35,6 +41,9 @@ class LeteRiver(Event):
         self.after_ultros_mod()
         self.remove_raft_mod()
         self.exit_river_mod()
+
+        if self.DOOR_RANDOMIZE:
+            self.door_rando_mod()
 
         if self.reward.type == RewardType.CHARACTER:
             self.character_mod(self.reward.id)
@@ -151,7 +160,13 @@ class LeteRiver(Event):
             field.Branch(space.end_address + 1), # skip nops
         )
 
-        space = Reserve(0xb0617, 0xb063c, "lete river tutorial", field.NOP()) # unused dialog 0169
+        if self.args.door_randomize:
+            # Don't patch out the map load argument
+            space = Reserve(0xb0617, 0xb062f, "lete river tutorial", field.NOP())
+            self.rom.set_byte(0xb0630, 0x6b)  # this should be a load map, not a fade-load map
+            #space = Reserve(0xb0636, 0xb063c, "lete river tutorial end", field.NOP())
+        else:
+            space = Reserve(0xb0617, 0xb063c, "lete river tutorial", field.NOP())
 
         # skip setting started raft ride bit to avoid side effects (terra/edgar/banon party in narshe)
         space = Reserve(0xb066f, 0xb0670, "lete river set started raft ride bit", field.NOP())
@@ -290,3 +305,24 @@ class LeteRiver(Event):
             field.AddItem(item),
             field.Dialog(self.items.get_receive_dialog(item)),
         ])
+
+    def door_rando_mod(self):
+        # Lete Section 1: Overwrite code for branches "LEFT", "RIGHT" to branch to the map load from "STRAIGHT"
+        # (STRAIGHT is the only one changed by door rando).
+        straight_mapload_addr = 0xb06eb
+        left_mapload_addr = 0xb0750
+        right_mapload_addr = 0xb07c0
+
+        straight_id = 2035
+        if straight_id in self.maps.trap_map.keys():
+            left_id = '2035a'
+            if left_id not in self.maps.trap_map.keys():
+                space = Reserve(left_mapload_addr, left_mapload_addr + 5, "Edit Lete River 1 Left destination", field.NOP())
+                space.write(field.Branch(straight_mapload_addr))
+                #print('patched ', left_id)
+
+            right_id = '2035b'
+            if right_id not in self.maps.trap_map.keys():
+                space = Reserve(right_mapload_addr, right_mapload_addr + 5, "Edit Lete River 1 Right destination", field.NOP())
+                space.write(field.Branch(straight_mapload_addr))
+                #print('patched ', right_id)

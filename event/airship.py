@@ -1,6 +1,11 @@
 from event.event import *
+from data.map_exit_extra import exit_data, door_short_text
 
 class Airship(Event):
+    def __init__(self, events, rom, args, dialogs, characters, items, maps, enemies, espers, shops, warps):
+        super().__init__(events, rom, args, dialogs, characters, items, maps, enemies, espers, shops, warps)
+        self.MAP_SHUFFLE = args.map_shuffle
+
     def name(self):
         return "Airship"
 
@@ -27,15 +32,37 @@ class Airship(Event):
         fly_wob_dg_cancel_dialog = 1293
         fly_wob_cancel_dialog = 1319
 
-        self.dialogs.set_text(fly_wor_fc_cancel_dialog, '<choice> (Lift-off)<line><choice> (World of Ruin)<line><choice> (Floating Continent)<line><choice> (Not just yet)<end>')
-        self.dialogs.set_text(fly_wor_cancel_dialog, '<choice> (Lift-off)<line><choice> (World of Ruin)<line><choice> (Not just yet)<end>')
+        # Edit Blackjack console text for map shuffle
+        fly_wor_fc_text = '<choice> (Lift-off)<line><choice> (World of Ruin)<line><choice> '
+        fly_wor_cancel_text = '<choice> (Lift-off)<line><choice> (World of Ruin)<line><choice> '
+
+        fc_dest_str = '(Floating Continent)'
+        if self.MAP_SHUFFLE:
+            self.FC_id = 1556
+            if self.FC_id in self.maps.door_map.keys():
+                # Find the new location and set the message
+                location_text = door_short_text[exit_data[self.maps.door_map[self.FC_id]][0]]
+                fc_dest_str = '(Find ' + location_text + ')'
+                fly_wor_cancel_text += '(Go to ' + location_text + ')<line><choice> '
+            else:
+                fly_wor_cancel_text += '(Go to Floating Continent)<line><choice> '
+        elif self.args.door_randomize_dungeon_crawl:
+            fc_dest_str = '(Engage the IAF)'
+            fly_wor_cancel_text += '(Enter the dungeon)<line><choice> '
+
+        fly_wor_fc_text += fc_dest_str + '<line><choice> (Not just yet)<end>'
+        fly_wor_cancel_text += '(Not just yet)<end>'
+
+        self.dialogs.set_text(fly_wor_fc_cancel_dialog, fly_wor_fc_text)
+        self.dialogs.set_text(fly_wor_cancel_dialog, fly_wor_cancel_text)
         self.dialogs.set_text(fly_wob_dg_cancel_dialog, '<choice> (Lift-off)<line><choice> (World of Balance)<line><choice> (Search The Skies)<line><choice> (Not just yet)<end>')
         self.dialogs.set_text(fly_wob_cancel_dialog, '<choice> (Lift-off)<line><choice> (World of Balance)<line><choice> (Not just yet)<end>')
 
         lift_off = 0xaf58d
         enter_floating_continent = 0xa581a
+        enter_floating_continent_skip_reform_iaf = 0xa5980
 
-        space = Allocate(Bank.CA, 298, "airship controls dialog/choices", field.NOP())
+        space = Allocate(Bank.CA, 309, "airship controls dialog/choices", field.NOP())
 
         self.enter_wor_mod(space)
         self.enter_wob_mod(space)
@@ -50,13 +77,24 @@ class Airship(Event):
                                dest4 = field.RETURN),
         )
 
-        fly_wor_cancel_choice = space.next_address
-        space.write(
-            field.DialogBranch(fly_wor_cancel_dialog,
-                               dest1 = lift_off,
-                               dest2 = self.enter_wor,
-                               dest3 = field.RETURN),
-        )
+        if self.MAP_SHUFFLE or self.args.door_randomize_dungeon_crawl:
+            # If FC completed, skip reform party & go to animation
+            fly_wor_skip_cancel_choice = space.next_address
+            space.write(
+                field.DialogBranch(fly_wor_cancel_dialog,
+                                   dest1=lift_off,
+                                   dest2=self.enter_wor,
+                                   dest3=enter_floating_continent_skip_reform_iaf,
+                                   dest4=field.RETURN),
+            )
+        else:
+            fly_wor_cancel_choice = space.next_address
+            space.write(
+                field.DialogBranch(fly_wor_cancel_dialog,
+                                   dest1 = lift_off,
+                                   dest2 = self.enter_wor,
+                                   dest3 = field.RETURN),
+            )
 
         fly_wob_dg_cancel_choice = space.next_address
         space.write(
@@ -91,13 +129,22 @@ class Airship(Event):
         space = Reserve(0xaf53a, 0xaf559, "airship controls wor event bit check", field.NOP())
         space.write(
             field.BranchIfEventBitSet(event_bit.IN_WOR, wor_control_checks),
-            field.BranchIfEventBitSet(event_bit.FINISHED_FLOATING_CONTINENT, fly_wor_cancel_choice),
         )
-        if self.args.character_gating:
+        if self.MAP_SHUFFLE or self.args.door_randomize_dungeon_crawl:
+            # Skip party reform if IAF already defeated.
+            # Do not turn off the "Find ..." option if character gated.
             space.write(
-                field.BranchIfEventBitClear(event_bit.character_recruited(self.events["Floating Continent"].character_gate()),
-                                            fly_wor_cancel_choice),
+                field.BranchIfEventBitSet(event_bit.DEFEATED_IAF, fly_wor_skip_cancel_choice),
             )
+        else:
+            space.write(
+                field.BranchIfEventBitSet(event_bit.FINISHED_FLOATING_CONTINENT, fly_wor_cancel_choice),
+            )
+            if self.args.character_gating:
+                space.write(
+                    field.BranchIfEventBitClear(event_bit.character_recruited(self.events["Floating Continent"].character_gate()),
+                                                fly_wor_cancel_choice),
+                )
         space.write(
             field.Branch(fly_wor_fc_cancel_choice),
         )
@@ -113,7 +160,12 @@ class Airship(Event):
                 field_entity.Pause(6),
                 field_entity.Turn(direction.LEFT),
             ),
-            field.ToggleWorlds(),
+            #field.ToggleWorlds(),  # Update for world safety
+            field.SetParentWorld(0x1),
+            # same args as airship lift-off load map:  args = [0xff, 0x25, 0x00, 0x00, 0x81]
+            # return to parent map at same position/direction, continue music, on airship.
+            field.FadeLoadMap(map_id=0x1ff, direction=direction.DOWN, default_music=False, x=0, y=0, fade_in = True,
+                              airship=True, entrance_event=True),
             vehicle.End(),
             field.Return(),
         )
@@ -129,7 +181,12 @@ class Airship(Event):
                 field_entity.Pause(6),
                 field_entity.Turn(direction.LEFT),
             ),
-            field.ToggleWorlds(),
+            # field.ToggleWorlds(),  # Update for world safety
+            field.SetParentWorld(0x0),
+            # same args as airship lift-off load map:  args = [0xff, 0x25, 0x00, 0x00, 0x81]
+            # return to parent map at same position/direction, continue music, on airship.
+            field.FadeLoadMap(map_id=0x1ff, direction=direction.DOWN, default_music=False, x=0, y=0, fade_in=True,
+                              airship=True, entrance_event=True),
             vehicle.End(),
             field.Return(),
         )
@@ -138,13 +195,22 @@ class Airship(Event):
         # if tentacles not defeated yet, figaro castle still underground, block doors
         #                                also hide guard and show scattered dead soldiers
         # in wob and after tentacles dead, can't be both underground and in airship
+        # If defeated tentacles, have the airship transition bring FC back to the surface
         space.write(
             field.BranchIfEventBitSet(event_bit.DEFEATED_TENTACLES_FIGARO, "DEFEATED_TENTACLES"),
             field.SetEventBit(npc_bit.BLOCK_INSIDE_DOORS_FIGARO_CASTLE),
             field.SetEventBit(npc_bit.DEAD_SOLDIERS_FIGARO_CASTLE),
             field.ClearEventBit(npc_bit.PRISON_GUARD_FIGARO_CASTLE),
+            field.SetEventBit(event_bit.PRISON_DOOR_OPEN_FIGARO_CASTLE),
 
             "DEFEATED_TENTACLES",
+            field.BranchIfEventBitClear(event_bit.DEFEATED_TENTACLES_FIGARO, "DID_NOT_DEFEAT_TENTACLES"),
+            field.SetEventBit(event_bit.FIGARO_CASTLE_IN_SF_DESERT_WOR),
+            field.ClearEventBit(event_bit.FIGARO_CASTLE_IN_KOHL_DESERT_WOR),
+            field.ClearEventBit(event_bit.FIGARO_CASTLE_AT_ANCIENT_CASTLE_WOR),
+            field.ClearEventBit(event_bit.PRISON_DOOR_OPEN_FIGARO_CASTLE),
+
+            "DID_NOT_DEFEAT_TENTACLES",
             field.ClearEventBit(npc_bit.STORES_NARSHE),
             field.SetEventBit(npc_bit.WEAPON_ELDER_NARSHE),
             field.SetEventBit(npc_bit.WEAPON_ROOM_ESPER_NARSHE),
@@ -152,10 +218,8 @@ class Airship(Event):
             field.ClearEventBit(npc_bit.MOBLIZ_CITIZENS),
             field.ClearEventBit(npc_bit.MOBLIZ_SOLDIERS_LETTER),
 
-            field.SetEventBit(event_bit.PRISON_DOOR_OPEN_FIGARO_CASTLE),
             field.ClearEventBit(npc_bit.LONE_WOLF_FIGARO_CASTLE),
             field.ClearEventBit(npc_bit.PRISONERS_FIGARO_CASTLE),
-
             field.SetEventBit(npc_bit.MAN_AT_COUNTER_OPERA),
             field.SetEventBit(npc_bit.IMPRESARIO_OPERA_LOBBY),
             field.ClearEventBit(npc_bit.IMPRESARIO_OPERA_SITTING),

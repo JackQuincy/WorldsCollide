@@ -82,6 +82,9 @@ def flags(args):
     if args.npc_dialog_tips:
         flags += " -npctips"
 
+    if args.npc_dialog_tips:
+        flags += " -npctips"
+
     if args.event_timers_random:
         flags += " -etr"
     elif args.event_timers_none:

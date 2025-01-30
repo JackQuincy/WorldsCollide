@@ -1,6 +1,19 @@
 from event.event import *
+from event.switchyard import *
+from data.map_exit_extra import exit_data
+from data.rooms import exit_world
 
 class DarylTomb(Event):
+    def __init__(self, events, rom, args, dialogs, characters, items, maps, enemies, espers, shops, warps):
+        super().__init__(events, rom, args, dialogs, characters, items, maps, enemies, espers, shops, warps)
+        self.DOOR_RANDOMIZE = (args.door_randomize_daryls_tomb
+                          or args.door_randomize_all
+                          or args.door_randomize_crossworld
+                          or args.door_randomize_dungeon_crawl
+                          or args.door_randomize_each)
+        self.MAP_SHUFFLE = args.map_shuffle
+        self.MAP_CROSSWORLD = args.map_shuffle_crossworld
+
     def name(self):
         return "Daryl's Tomb"
 
@@ -11,6 +24,18 @@ class DarylTomb(Event):
         self.reward = self.add_reward(RewardType.CHARACTER | RewardType.ESPER | RewardType.ITEM)
 
     def mod(self):
+        self.exit_loc = [0x01, 25, 53]
+        if self.MAP_SHUFFLE:
+            # modify exit position
+            south_id = 1242
+            if south_id in self.maps.door_map.keys():
+                self.exit_loc = self.maps.get_connection_location(south_id)
+                # conn_south = self.maps.door_map[south_id]  # connecting exit south
+                # conn_pair = exit_data[conn_south][0]  # original connecting exit
+                # self.exit_loc = [exit_world[conn_pair]] + \
+                #                 self.maps.exits.exit_original_data[conn_pair][1:3]   # [dest_map, dest_x, dest_y]
+                #print('Updated Daryl Cave quick exit: ', self.exit_loc)
+
         self.entrance_mod()
         self.staircase_mod()
         self.dullahan_battle_mod()
@@ -22,6 +47,9 @@ class DarylTomb(Event):
         elif self.reward.type == RewardType.ITEM:
             self.item_mod(self.reward.id)
         self.finish_check_mod()
+
+        if self.DOOR_RANDOMIZE:
+            self.door_rando_mod()
 
         self.log_reward(self.reward)
 
@@ -50,19 +78,40 @@ class DarylTomb(Event):
             # reset turtle's positions before leaving in case player re-enters later
             field.ClearEventBit(event_bit.DARYL_TOMB_TURTLE1_MOVED),
             field.ClearEventBit(event_bit.DARYL_TOMB_TURTLE2_MOVED),
-
-            # for convenience change staircase door to take player back out to wor
-            field.LoadMap(0x01, direction.DOWN, default_music = True, x = 25, y = 53),
-            world.End(),
-            field.Return(),
         ]
-        space = Write(Bank.CA, src, "daryl tomb back exit")
-        back_exit = space.start_address
 
-        space = Reserve(0xa435d, 0xa4362, "daryl tomb staircase and getting falcon scenes", field.NOP())
-        space.write(
-            field.Branch(back_exit),
-        )
+        if self.DOOR_RANDOMIZE:
+            # Send the player to the switchyard to handle random connections
+            event_id = 2058  # ID of Daryl's Tomb quick exit
+            src += GoToSwitchyard(event_id)
+
+            # (2b) Add the switchyard event tile that handles exit to the world map
+            # Use original world map location for this: whatever uses this is actually going to outside DT.
+            switchyard_src = SummonAirship(0x01, 25, 53)
+            AddSwitchyardEvent(event_id, self.maps, src=switchyard_src)
+
+        elif self.MAP_SHUFFLE:
+            # Map shuffle without door randomization: this should just lead back to the origin of the dungeon.
+            # Call warp code without animation
+            from data.warps import CUSTOM_WARP_HOOK
+            src = [
+                field.Call(CUSTOM_WARP_HOOK),
+                field.Return()
+            ]
+
+        else:
+            # for convenience change staircase door to take player back out to wor
+            exit_location = [0x01, 25, 53]
+            src += [
+                field.FadeLoadMap(exit_location[0], direction.DOWN, default_music = True,
+                              x = exit_location[1], y = exit_location[2]),
+                world.End(),
+                field.Return()
+            ]
+
+        # Need to reserve 12 bytes for vanilla command.
+        space = Reserve(0xa435d, 0xa436a, "daryl tomb staircase and getting falcon scenes", field.NOP())
+        space.write(src)
 
     def dullahan_battle_mod(self):
         boss_pack_id = self.get_boss("Dullahan")
@@ -137,3 +186,45 @@ class DarylTomb(Event):
                               layer1 = True, layer2 = True, layer3 = True, sprite_layer = True),
             field.Call(OPEN_BACK_EXIT),
         )
+
+    def door_rando_mod(self):
+        # (1) Change map for Daryl's Tomb turtle #2 right door.
+        # Change the tiles at map_id = 0x12C, Layer 1 (79, 2) with the following 2x1: $0A, $04 
+        src = [
+            field.SetMapTiles(1, 79, 2, 1, 2, [0x0a, 0x04]),
+            field.SetMapTiles(2, 79, 1, 1, 1, [0x21]),
+            field.BranchIfEventBitClear(event_bit.DARYL_TOMB_DOOR_SWITCH, 0xaf20f),
+            # CA/F205: C0    If ($1E80($2B8) [$1ED7, bit 0] is clear), branch to $CAF20F
+            field.Branch(0xaf20b)
+        ]
+        space = Write(Bank.CA, src, 'Daryls Tomb DR map modification')
+        dr_map_address = space.start_address
+        # Call this script in the entrance event:
+        space = Reserve(0xaf205, 0xaf20a, "Daryls Tomb entrance event DR modification", field.NOP())
+        space.write(field.Branch(dr_map_address))
+
+        # 795: lambda info: set_y(info[9]-1, info),  # [797, "Darill's Tomb B2 Water Room Right Door"], move up 1 tile
+        turtle2_exit = self.maps.get_exit(795)
+        turtle2_exit.y -= 1  # move to [79, 2]
+        # 797: lambda info: set_dest_y(info[2]-2, info),  #  [795, "Darill's Tomb B2 MIAB Hallway to Water Room"],
+        miab_s_exit = self.maps.get_exit(797)
+        miab_s_exit.dest_y -= 2  # Move to [79, 3] to match
+
+        # (2) Make turtle #1 not activate if water is low
+        src = [
+            field.BranchIfEventBitSet(event_bit.DARYL_TOMB_WATER1_HIGH, 0xa4259),
+            field.Return()
+        ]
+        space = Write(Bank.CA, src, 'Modified daryls tomb turtle #1 event')
+
+        turtle_event = self.maps.get_event(0x12b, 56, 20)
+        turtle_event.event_address = space.start_address - EVENT_CODE_START
+
+        # (3) Make turtle #2 not activate if water is low
+        src = [
+            field.BranchIfEventBitSet(event_bit.DARYL_TOMB_WATER2_HIGH, 0xa42c0),
+            field.Return()
+        ]
+        space = Write(Bank.CA, src, 'Modified daryls tomb turtle #2 event R')
+        turtle2_event = self.maps.get_event(0x12c, 79, 6)
+        turtle2_event.event_address = space.start_address - EVENT_CODE_START

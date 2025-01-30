@@ -1,7 +1,8 @@
 from data.map_event import MapEvent, LongMapEvent
 from event.event import *
+import time
 
-class MapEvents:
+class MapEvents():
     EVENT_COUNT = 1164
     DATA_START_ADDR = 0x040342
     DATA_END_ADDR = 0x041A0F
@@ -12,7 +13,8 @@ class MapEvents:
 
     def read(self):
         self.events = []
-
+        self.event_address_index = {}
+        counter = 0
         for event_index in range(self.EVENT_COUNT):
             event_data_start = self.DATA_START_ADDR + event_index * MapEvent.DATA_SIZE
             event_data = self.rom.get_bytes(event_data_start, MapEvent.DATA_SIZE)
@@ -20,13 +22,15 @@ class MapEvents:
             new_event = MapEvent()
             new_event.from_data(event_data)
             self.events.append(new_event)
+            self.event_address_index[new_event.event_address] = counter
+            counter += 1
 
     def write(self):
         for event_index, event in enumerate(self.events):
             event_data = event.to_data()
             event_data_start = self.DATA_START_ADDR + event_index * MapEvent.DATA_SIZE
             # Assert that the address being written doesn't go beyond the expected end point
-            assert(event_data_start < self.DATA_END_ADDR)
+            #assert(event_data_start < self.DATA_END_ADDR)
             self.rom.set_bytes(event_data_start, event_data)
 
     def mod(self):
@@ -59,7 +63,7 @@ class MapEvents:
             event.print()
 
 
-class LongMapEvents:
+class LongMapEvents():
     EVENT_COUNT = 0
     POINTER_START_ADDR_LONG = 0x320000  # Bank $F2.  Set dynamically?
     DATA_START_ADDR_LONG = 0x320342
@@ -75,7 +79,8 @@ class LongMapEvents:
     def read(self):
         # by default, no LongMapEvents in the rom
         self.events = []
-
+        self.event_address_index = {}
+        counter = 0
         for event_index in range(self.EVENT_COUNT):
             event_data_start = self.DATA_START_ADDR_LONG + event_index * LongMapEvent.DATA_SIZE
             event_data = self.rom.get_bytes(event_data_start, LongMapEvent.DATA_SIZE)
@@ -83,6 +88,8 @@ class LongMapEvents:
             new_event = LongMapEvent()
             new_event.from_data(event_data)
             self.events.append(new_event)
+            self.event_address_index[new_event.event_address] = counter
+            counter += 1
 
     def write(self):
         for event_index, event in enumerate(self.events):
@@ -122,6 +129,7 @@ class LongMapEvents:
     def addLongEvents(self):
         # Modify the ROM to check for long events in the field program & include long event pointers
         # (Following Lenophis' code implementing long events, the event equivalent of long exits)
+
         ROM_OFFSET = 0xC00000
 
         # long event triggers

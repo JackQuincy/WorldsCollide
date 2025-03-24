@@ -65,10 +65,13 @@ def options(args):
 
     result.append(("Chances", steal_chances, "steal_chances"))
 
-    result.append(("Shuffle", args.shuffle_steals_drops, "shuffle_steals_drops"))
+    result.append(("Shuffle Steals", args.shuffle_steals, "shuffle_steals"))
     if args.shuffle_steals_drops:
-        result.append(("Random Percent", f"{args.shuffle_steals_drops_random_percent}%", "shuffle_steals_drops_random_percent"))
+        result.append(("Random Percent", f"{args.shuffle_steals_random_percent}%", "shuffle_steals_random_percent"))
 
+    result.append(("Shuffle Drops", args.shuffle_drops, "shuffle_drops"))
+    if args.shuffle_steals_drops:
+        result.append(("Random Percent", f"{args.shuffle_drops_random_percent}%", "shuffle_drops_random_percent"))
     return result
 
 def menu(args):

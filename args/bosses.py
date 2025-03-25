@@ -87,7 +87,7 @@ def options(args):
     elif args.boss_battles_random:
         boss_battles = "Random"
     elif args.boss_battles_world_shuffle:
-        boss_battles = "World Shuffle"
+        boss_battles = "WShuffle"
 
     dragon_battles = DEFAULT_DRAGON_PROTOCOL
     if args.dragon_boss_location:

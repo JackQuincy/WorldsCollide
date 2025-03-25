@@ -176,18 +176,18 @@ class EnemyPacks():
     def world_shuffle_event_bosses(self):
         import random
 
-        wob_bosses_to_replace = self.__replaceable_wob_bosses()
+        wob_bosses_to_replace = self._replaceable_wob_bosses()
         wob_bosses_possible = wob_bosses_to_replace.copy()
 
         random.shuffle(wob_bosses_possible)
-        for index, boss in enumerate(wob_bosses_possible):
+        for index, boss in enumerate(wob_bosses_to_replace):
             self.event_boss_replacements[boss] = wob_bosses_possible[index]
 
-        wor_bosses_to_replace = self.__replaceable_wor_bosses()
+        wor_bosses_to_replace = self._replaceable_wor_bosses()
         wor_bosses_possible = wor_bosses_to_replace.copy()
 
         random.shuffle(wor_bosses_possible)
-        for index, boss in enumerate(wor_bosses_possible):
+        for index, boss in enumerate(wor_bosses_to_replace):
             self.event_boss_replacements[boss] = wor_bosses_possible[index]
 
         # I don't think this is needed because phunbaba 3 should be in wor but just in case

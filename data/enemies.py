@@ -275,6 +275,60 @@ class Enemies():
 
         # NOTE: any remaining formations (due to extra_formations) are lost
 
+    def world_shuffle_encounters(self, maps):
+        import collections
+        # find all packs that are randomly encountered in zones
+        packs = collections.OrderedDict()
+        for zone in self.zones.zones:
+            if self.skip_shuffling_zone(maps, zone):
+                continue
+
+            for x in range(zone.PACK_COUNT):
+                if self.skip_shuffling_pack(zone.packs[x], zone.encounter_rates[x]):
+                    continue
+
+                packs[self.packs.packs[zone.packs[x]]] = None
+
+        # find all formations that are randomly encountered in packs
+        wob_formations = []
+        wor_formations = []
+        wob_packs = []
+        wor_packs = []
+        for pack in packs:
+            #TODO check if this pack has wob or wor formations and stash the formations and pack in the apporiate lists
+            for y in range(pack.FORMATION_COUNT):
+                if self.skip_shuffling_formation(pack.formations[y]):
+                    continue
+
+                if pack.extra_formations[y]:
+                    # pack has extra formations (i.e. each formation is randomized with the subsequent 3 formations)
+                    # unfortunately, this means there are more formations than packs to put them in, so some formations are lost
+                    for x in range(4):
+                        formations.append(pack.formations[y] + x)
+                else:
+                    formations.append(pack.formations[y])
+
+        # shuffle the randomly encounterable formations
+        import random
+        random.shuffle(wob_formations)
+        random.shuffle(wor_formations)
+
+        for pack in wob_packs:
+            for y in range(pack.FORMATION_COUNT):
+                if self.skip_shuffling_formation(pack.formations[y]):
+                    continue
+
+                pack.formations[y] = wob_formations.pop()
+
+        for pack in wor_packs:
+            for y in range(pack.FORMATION_COUNT):
+                if self.skip_shuffling_formation(pack.formations[y]):
+                    continue
+
+                pack.formations[y] = wor_formations.pop()
+
+        # NOTE: any remaining formations (due to extra_formations) are lost
+
     def chupon_encounters(self, maps):
         # find all packs that are randomly encountered in zones
         packs = []

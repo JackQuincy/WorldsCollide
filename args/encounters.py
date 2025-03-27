@@ -82,6 +82,8 @@ def options(args):
     result.append(("Fixed Encounters", fixed_encounters, "fixed_encounters"))
     if args.fixed_encounters_random is not None:
         result.append(("Boss Percent", f"{args.fixed_encounters_random}%", "fixed_encounters_random"))
+    elif args.fixed_encounters_world_random is not None:
+        result.append(("Boss Percent", f"{args.fixed_encounters_world_random}%", "fixed_encounters_world_random"))
 
     escapable = "Original"
     if args.encounters_escapable_random is not None:

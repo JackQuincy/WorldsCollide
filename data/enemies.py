@@ -455,10 +455,10 @@ class Enemies():
             self.shuffle_encounters(maps)
         elif self.args.random_encounters_chupon:
             self.chupon_encounters(maps)
-        elif not self.args.random_encounters_original:
-            self.randomize_encounters(maps)
         elif self.args.random_encounters_world_shuffle:
             self.world_shuffle_encounters(maps)
+        elif not self.args.random_encounters_original:
+            self.randomize_encounters(maps)
 
         self.formations.mod()
         self.packs.mod()

@@ -295,7 +295,12 @@ class Enemies():
         wob_packs = []
         wor_packs = []
         for pack in packs:
-            #TODO check if this pack has wob or wor formations and stash the formations and pack in the apporiate lists
+            #check if this pack has wob or wor formations and stash the formations and pack in the apporiate lists
+            is_wob = self.formations.is_wob(pack.formations[0])
+            if is_wob:
+                wob_packs.append(pack)
+            else:
+                wor_packs.append(pack)
             for y in range(pack.FORMATION_COUNT):
                 if self.skip_shuffling_formation(pack.formations[y]):
                     continue
@@ -304,9 +309,15 @@ class Enemies():
                     # pack has extra formations (i.e. each formation is randomized with the subsequent 3 formations)
                     # unfortunately, this means there are more formations than packs to put them in, so some formations are lost
                     for x in range(4):
-                        formations.append(pack.formations[y] + x)
+                        if is_wob:
+                            wob_formations.append(pack.formations[y] + x)
+                        else:
+                            wor_formations.append(pack.formations[y] + x)
                 else:
-                    formations.append(pack.formations[y])
+                    if is_wob:
+                        wob_formations.append(pack.formations[y])
+                    else:
+                        wor_formations.append(pack.formations[y])
 
         # shuffle the randomly encounterable formations
         import random
@@ -446,6 +457,8 @@ class Enemies():
             self.chupon_encounters(maps)
         elif not self.args.random_encounters_original:
             self.randomize_encounters(maps)
+        elif self.args.random_encounters_world_shuffle:
+            self.world_shuffle_encounters(maps)
 
         self.formations.mod()
         self.packs.mod()

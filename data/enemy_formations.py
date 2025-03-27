@@ -40,18 +40,10 @@ class EnemyFormations():
 
         # the method for forming this list and the next was flawed/how it would be used wasn't understood.
         # revisit and redefine these in a simpilier way.
-        self.wob = [3, *range(5,9), *range(9,17), *range(18,25), 26, *range(28, 34), 36, *range(44, 46), *range(49,58),
-                    *range(65, 67), *range(68, 70), *range(71, 79), *range(80, 82), 85, 90, *range(93, 103),
-                    *range(104, 111), *range(115,117), *range(118, 126), *range(135, 137), *range(139, 157),
-                    *range(160, 170), 177, *range(180, 182), *range(183, 189), *range(190, 192), 210, *range(356, 358), *range(360, 362),
-                    *range(373, 379), *range(381, 384), *range(403,406), 416, 419]
-        wob_set = set(self.wob)
-
-        self.wor = [103, 114, 128, 134, 137, *range(171, 174), *range(192, 208), 209, *range(212, 235),
-                    *range(236, 244), *range(244, 252), *range(253, 283), *range(284, 287),
-                    *range(291, 344), *range(346, 354), 355, *range(362, 366), *range(394, 402), *range(413, 416),
-                    *range(425, 432), 466, 472, 478, 480, 486]
-        wor_set = set(self.wor)
+        self.wob = [*range(0, 103), *range(104, 114), *range(115, 128), *range(129,134), 135,136,
+                    *range(138, 171), *range(174, 192), 210, *range(356, 362),
+                    *range(373, 384), *range(402, 409), *range(410,412), *range(416,420), 434, 479]
+        self.wob_set = set(self.wob)
 
         self.normal = []
         self.formations = []
@@ -64,10 +56,10 @@ class EnemyFormations():
 
             if formation_index not in non_normal_set:
                 self.normal.append(formation_index)
-                if formation_index in wor_set:
-                    self.wor_normal.append(formation_index)
-                if formation_index in wob_set:
+                if formation_index in self.wob_set:
                     self.wob_normal.append(formation_index)
+                else:
+                    self.wor_normal.append(formation_index)
 
             # name the formation based on enemies and their counts
             enemy_count = {}
@@ -110,6 +102,9 @@ class EnemyFormations():
             if cur_enemy_id == enemy_id:
                 return True
         return False
+
+    def is_wob(self, formation_id):
+        return formation_id in self.wob_set
 
     def get_random_normal(self):
         import random

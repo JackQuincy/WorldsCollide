@@ -274,7 +274,7 @@ class EnemyPacks():
         import random
         for pack_id in packs:
             if random.random() < boss_percent:
-                formation = self.formations.get_random_boss(exclude_bosses) # outside of the below for loop, this ensures that there's no variability within fixed encounters within the same seed
+                formation = self.formations.get_random_wob_boss(exclude_bosses) # outside of the below for loop, this ensures that there's no variability within fixed encounters within the same seed
                 for formation_index in range(self.packs[pack_id].FORMATION_COUNT):
                     self.packs[pack_id].formations[formation_index] = formation
             else:
@@ -305,7 +305,7 @@ class EnemyPacks():
         import random
         for pack_id in packs:
             if random.random() < boss_percent:
-                formation = self.formations.get_random_boss(exclude_bosses) # outside of the below for loop, this ensures that there's no variability within fixed encounters within the same seed
+                formation = self.formations.get_random_wor_boss(exclude_bosses) # outside of the below for loop, this ensures that there's no variability within fixed encounters within the same seed
                 for formation_index in range(self.packs[pack_id].FORMATION_COUNT):
                     self.packs[pack_id].formations[formation_index] = formation
             else:

@@ -11,7 +11,7 @@ def parse(parser):
                          help = "MagiMaster does not cast Ultima before death")
     boss_ai.add_argument("-cmd", "--chadarnook-more-demon", action = "store_true",
                          help = "Chadarnook demon form appears for longer and does not immediately switch back to painting")
-    boss_ai.add_argument("-rt", "--rizopas-timer", default = [100, 100], type = int,
+    boss_ai.add_argument("-rt", "--rizopas-timer", default = [5, 55], type = int,
                             nargs = 2, metavar = ("MIN", "MAX"), choices = range(5, 201),
                             help = "Custom range for seconds before Rizopas will appear")
 

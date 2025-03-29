@@ -12,7 +12,7 @@ def parse(parser):
     boss_ai.add_argument("-cmd", "--chadarnook-more-demon", action = "store_true",
                          help = "Chadarnook demon form appears for longer and does not immediately switch back to painting")
     boss_ai.add_argument("-rt", "--rizopas-timer", default = [100, 100], type = int,
-                            nargs = 2, metavar = ("MIN", "MAX"), choices = range(201),
+                            nargs = 2, metavar = ("MIN", "MAX"), choices = range(5, 201),
                             help = "Custom range for seconds before Rizopas will appear")
 
 def process(args):

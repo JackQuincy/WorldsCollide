@@ -16,7 +16,7 @@ def parse(parser):
                             help = "Custom range for seconds before Rizopas will appear")
 
 def process(args):
-    pass
+    args._process_min_max("rizopas_timer")
 
 def flags(args):
     flags = ""
@@ -35,7 +35,7 @@ def flags(args):
     return flags
 
 def options(args):
-    rizopas_timer = f"{args.rizopas_timer_min}-{args.rizopas_timer_max}%"
+    rizopas_timer = f"{args.rizopas_timer_min}s-{args.rizopas_timer_max}s"
 
     return [
         ("Doom Gaze No Escape", args.doom_gaze_no_escape, "doom_gaze_no_escape"),

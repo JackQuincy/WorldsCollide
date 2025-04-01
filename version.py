@@ -1,1 +1,1 @@
-__version__ = "1.5.0 jazer"
+__version__ = "j.5.0"

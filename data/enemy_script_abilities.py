@@ -61,7 +61,6 @@ class EnemyScriptAbilities:
 
         "Shock Wave" : NON_ELEMENTAL0,
         "Heart Burn" : NON_ELEMENTAL0,
-        "Stone"      : NON_ELEMENTAL0,
         "L4 Flare"   : NON_ELEMENTAL0,
         "Blow Fish"  : NON_ELEMENTAL1,
         "Rage"       : NON_ELEMENTAL1,
@@ -73,6 +72,7 @@ class EnemyScriptAbilities:
         "Land Slide" : NON_ELEMENTAL1,
         "GrandTrain" : NON_ELEMENTAL1,
         "Wombat"     : NON_ELEMENTAL2,
+        "Stone"      : NON_ELEMENTAL2,
         "Meteo"      : NON_ELEMENTAL2,
         "HyperDrive" : NON_ELEMENTAL2,
         "Ultima"     : NON_ELEMENTAL2,

@@ -495,6 +495,7 @@ non_elemental = [
         name_id["Raid"],
         name_id["Heart Burn"],
         name_id["Rasp"],
+        name_id["Stone"],
         name_id["L.4 Flare"],
     ],
     [ # tier 4
@@ -545,7 +546,6 @@ non_elemental = [
         name_id["Meteo"],
         name_id["HyperDrive"],
         name_id["Goner"],
-        name_id["Stone"],
     ],
     [ # tier 10
         name_id["Wombat"],
@@ -554,7 +554,6 @@ non_elemental = [
         name_id["HyperDrive"],
         name_id["Goner"],
         name_id["Ultima"],
-        name_id["Stone"],
     ],
     [ # tier 11
         name_id["Fallen One"],

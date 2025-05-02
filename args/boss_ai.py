@@ -29,7 +29,7 @@ def flags(args):
         flags += " -mmnu"
     if args.chadarnook_more_demon:
         flags += " -cmd"
-    if args.rizopas_timer_min != 100 or args.rizopas_timer_max != 100:
+    if args.rizopas_timer_min != 5 or args.rizopas_timer_max != 55:
         flags += f" -rt {args.rizopas_timer_min} {args.rizopas_timer_max}"
 
     return flags

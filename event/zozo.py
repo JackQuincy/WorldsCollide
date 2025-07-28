@@ -52,9 +52,10 @@ class Zozo(Event):
 
         self.set_clock_mod()
 
-        # always randomize clock
-        time = self.randomize_clock_mod()
-        self.log_change("6:10:50", time)
+        # default to randomizing clock
+        if not self.args.vanilla_clock:
+            time = self.randomize_clock_mod()
+            self.log_change("6:10:50", time)
 
     def add_gating_condition(self):
         src = [

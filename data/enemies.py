@@ -63,7 +63,7 @@ class Enemies():
         return len(self.enemies)
 
     def get_random(self):
-        import random
+        import rng as random
         random_enemy = random.choice(self.enemies[:255])
         return random_enemy.id
 
@@ -92,7 +92,7 @@ class Enemies():
         self.enemies[enemy_id].drop_common = item_id
 
     def remove_fenix_downs(self):
-        import random
+        import rng as random
         from data.item_names import name_id
 
         fenix_down = name_id["Fenix Down"]
@@ -151,7 +151,7 @@ class Enemies():
             self.enemies[enemy_id].exp = exp * self.enemies[enemy_id].level
 
     def boss_normalize_distort_stats(self):
-        import random
+        import rng as random
 
         def stat_min_max(stat_value, min_possible, max_possible):
             distortion_percent = 0.25
@@ -263,7 +263,7 @@ class Enemies():
                     formations.append(pack.formations[y])
 
         # shuffle the randomly encounterable formations
-        import random
+        import rng as random
         random.shuffle(formations)
 
         for pack in packs:
@@ -487,7 +487,7 @@ class Enemies():
                 self.set_rare_steal(enemy.id, steals.pop(0))
 
     def set_escapable(self):
-        import random
+        import rng as random
 
         escapable_percent = self.args.encounters_escapable_random / 100.0
         for enemy in self.enemies:

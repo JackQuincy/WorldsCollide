@@ -159,7 +159,8 @@ class PhantomTrain(Event):
         possible_positions = [ForestPos(0x84, 10, 9), ForestPos(0x84, 17, 9), ForestPos(0x84, 27, 10),
                               ForestPos(0x85, 3, 9), ForestPos(0x85, 13, 10), ForestPos(0x85, 18, 9),
                               ForestPos(0x86, 5, 10), ForestPos(0x86, 7, 9), ForestPos(0x86, 13, 9)]
-        forest_pos = random.choice(possible_positions)
+        choice = random.choice(possible_positions)
+        forest_pos = ForestPos(choice[0], choice[1], choice[2])
 
         from data.npc import NPC
         ghost_shop_npc = NPC()

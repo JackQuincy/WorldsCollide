@@ -76,7 +76,6 @@ class Events():
                     reward_slots.append(reward)
 
         random.shuffle(reward_slots)
-        print(reward_slots)
         return reward_slots
 
     def choose_single_possible_type_rewards(self, reward_slots):

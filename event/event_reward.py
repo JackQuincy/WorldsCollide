@@ -15,7 +15,14 @@ class Reward:
         self.possible_types = possible_types
 
     def single_possible_type(self):
-        return self.possible_types in RewardType
+        pt = self.possible_types
+        if pt & RewardType.CHARACTER == pt:
+            return True
+        if pt & RewardType.ESPER == pt:
+            return True
+        if pt & RewardType.ITEM == pt:
+            return True
+        return False
 
     def __str__(self):
         result = f"{self.id} {self.type} {self.event.name()}"
@@ -35,19 +42,15 @@ def choose_reward(possible_types, characters, espers, items):
 
     all_types = [flag for flag in RewardType]
     random.shuffle(all_types)
-    print(possible_types)
 
     item_possible = False
     for reward_type in all_types:
-        print(reward_type)
-        print(reward_type & possible_types)
         if reward_type & possible_types:
             if reward_type == RewardType.CHARACTER and characters.get_available_count():
                 return (characters.get_random_available(), reward_type)
             elif reward_type == RewardType.ESPER and espers.available():
                 return (espers.get_random_esper(), reward_type)
             elif reward_type == RewardType.ITEM:
-                print("setting item possible")
                 item_possible = True
 
     # tried all possible_rewards and none were available

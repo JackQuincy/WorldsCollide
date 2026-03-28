@@ -19,8 +19,10 @@ class _Instruction:
         elif mode >= LNG:
             self.args = arg.to_bytes(3, "little")
         elif mode >= IMM16:
+            arg = int(arg)
             self.args = (arg & 0xffff).to_bytes(2, "little")
         elif arg is not None:
+            arg = int(arg)
             self.args = (arg & 0xff).to_bytes(1, "little")
         else:
             self.args = []

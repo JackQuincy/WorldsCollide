@@ -53,7 +53,7 @@ class NaturalMagic:
             )
 
         def update_known_spells_address(space_start, learner):
-            known_spells_start = 0x1a6e + Spells.SPELL_COUNT * learner
+            known_spells_start = int(0x1a6e + Spells.SPELL_COUNT * learner)
 
             # update which character's known spells are modified
             space = Reserve(space_start, space_start + 1, "natural magic known spells address", asm.NOP())

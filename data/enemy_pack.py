@@ -25,6 +25,7 @@ class EnemyPack():
             if self.extra_formations[formation_index]:
                 formation_short |= 0x8000
 
+            formation_short = int(formation_short)
             data[formation_start : formation_start + self.FORMATION_ID_SIZE] = formation_short.to_bytes(2, "little")
 
         return data

@@ -76,6 +76,7 @@ class Events():
                     reward_slots.append(reward)
 
         random.shuffle(reward_slots)
+        print(reward_slots)
         return reward_slots
 
     def choose_single_possible_type_rewards(self, reward_slots):
@@ -178,7 +179,7 @@ class Events():
     # location gating 2 reward selector
     # characters can only be at their own checks, so use the character gates to determine where a character can be placed
     def location_gating2_mod(self, events, name_event):
-        import random
+        import rng as random
         # initialize the reward slots
         reward_slots = self.init_reward_slots(events)
         # for every event with only one reward type possible, assign random rewards

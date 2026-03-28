@@ -1,4 +1,4 @@
-import random
+import rng as random
 
 def name():
     return "Starting Gold/Items"

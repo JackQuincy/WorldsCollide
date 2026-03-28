@@ -31,7 +31,7 @@ class Coliseum():
             match.opponent = opponents[match_index]
 
     def randomize_opponents(self, random_opponent_percent = None):
-        import random
+        import rng as random
 
         for match in self.matches:
             match.opponent = self.enemies.get_random() if random_opponent_percent is not None and (random.random() < random_opponent_percent) else match.opponent
@@ -47,7 +47,7 @@ class Coliseum():
             match.reward = rewards[match_index]
 
     def randomize_rewards(self, random_reward_percent = None):
-        import random
+        import rng as random
 
         for match in self.matches:
             match.reward = self.items.get_random() if random_reward_percent is not None and (random.random() < random_reward_percent) else match.reward

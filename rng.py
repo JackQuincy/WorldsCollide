@@ -11,12 +11,14 @@ def seed(s):
     _generator = np.random.default_rng(seed_int)
 
 def choice(seq):
-    index = int(_generator.integers(0, len(seq)))
-    return seq[index]
+    if type(seq) == set:
+        seq = list(seq)
+    return _generator.choice(seq)
 
 def sample(population, k):
-    indices = _generator.choice(len(population), size=k, replace=False)
-    return [population[int(i)] for i in indices]
+    if type(population) == set:
+        population = list(population)
+    return _generator.choice(population, k)
 
 def shuffle(lst):
     _generator.shuffle(lst)

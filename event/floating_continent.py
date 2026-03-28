@@ -409,7 +409,7 @@ class FloatingContinent(Event):
                 name_pack["Poltrgeist"],
             ]
             # shuffle their order
-            import random
+            import rng as random
             random.shuffle(boss_slots)
             
             # write out the cutscene sequence before ejected by Kefka

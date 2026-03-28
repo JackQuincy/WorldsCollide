@@ -371,6 +371,8 @@ class Items():
             item_type = random.choice(item_types)
         except TypeError:
             item_type = item_types
+        except ValueError:
+            item_type = item_types
 
         return random.choice(self.get_items(exclude, item_type))
 

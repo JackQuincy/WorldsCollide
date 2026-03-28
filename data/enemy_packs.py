@@ -174,7 +174,7 @@ class EnemyPacks():
         self.phunbaba3_safety_check(bosses_to_replace)
 
     def world_shuffle_event_bosses(self):
-        import random
+        import rng as random
 
         wob_bosses_to_replace = self._replaceable_wob_bosses()
         wob_bosses_possible = wob_bosses_to_replace.copy()
@@ -319,7 +319,7 @@ class EnemyPacks():
         if self.args.dragon_boss_location != bosses.BossLocations.MIX:
             exclude_bosses += self.formations.ALL_DRAGONS
 
-        import random
+        import rng as random
         for pack_id in packs:
             if random.random() < boss_percent:
                 formation = self.formations.get_random_wob_boss(exclude_bosses) # outside of the below for loop, this ensures that there's no variability within fixed encounters within the same seed
@@ -350,7 +350,7 @@ class EnemyPacks():
         if self.args.dragon_boss_location != bosses.BossLocations.MIX:
             exclude_bosses += self.formations.ALL_DRAGONS
 
-        import random
+        import rng as random
         for pack_id in packs:
             if random.random() < boss_percent:
                 formation = self.formations.get_random_wor_boss(exclude_bosses) # outside of the below for loop, this ensures that there's no variability within fixed encounters within the same seed

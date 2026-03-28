@@ -17,7 +17,7 @@ class Battle(battle_result.Result):
 class Result(ObjectiveResult):
     NAME = "High Tier Shield"
     def __init__(self):
-        import random
+        import rng as random
         from data.items import Items
 
         good_shields = intersection(Items.GOOD, SHIELDS)

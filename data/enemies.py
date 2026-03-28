@@ -320,7 +320,7 @@ class Enemies():
                         wor_formations.append(pack.formations[y])
 
         # shuffle the randomly encounterable formations
-        import random
+        import rng as random
         random.shuffle(wob_formations)
         random.shuffle(wor_formations)
 
@@ -401,7 +401,7 @@ class Enemies():
             self.set_rare_drop(enemy.id, self.items.get_random())
 
     def shuffle_steals_drops_random(self):
-        import random
+        import rng as random
         from data.bosses import final_battle_enemy_name
 
         # Assemble the list of steals and drops
@@ -432,7 +432,7 @@ class Enemies():
                     self.set_rare_drop(enemy.id, steals_drops.pop(0))
 
     def shuffle_drops_random(self):
-            import random
+            import rng as random
             from data.bosses import final_battle_enemy_name
 
             # Assemble the list of steals and drops
@@ -461,7 +461,7 @@ class Enemies():
                         self.set_rare_drop(enemy.id, drops.pop(0))
 
     def shuffle_steals_random(self):
-        import random
+        import rng as random
         from data.bosses import final_battle_enemy_name
 
         # Assemble the list of steals and drops

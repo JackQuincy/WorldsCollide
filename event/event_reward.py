@@ -35,15 +35,19 @@ def choose_reward(possible_types, characters, espers, items):
 
     all_types = [flag for flag in RewardType]
     random.shuffle(all_types)
+    print(possible_types)
 
     item_possible = False
     for reward_type in all_types:
+        print(reward_type)
+        print(reward_type & possible_types)
         if reward_type & possible_types:
             if reward_type == RewardType.CHARACTER and characters.get_available_count():
                 return (characters.get_random_available(), reward_type)
             elif reward_type == RewardType.ESPER and espers.available():
                 return (espers.get_random_esper(), reward_type)
             elif reward_type == RewardType.ITEM:
+                print("setting item possible")
                 item_possible = True
 
     # tried all possible_rewards and none were available

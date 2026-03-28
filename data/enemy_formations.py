@@ -113,11 +113,11 @@ class EnemyFormations():
         return random.choice(self.normal)
 
     def get_random_wob_normal(self):
-        import random
+        import rng as random
         return random.choice(self.wob_normal)
 
     def get_random_wor_normal(self):
-        import random
+        import rng as random
         return random.choice(self.wor_normal)
 
     def get_random_boss(self, exclude = None):
@@ -129,7 +129,7 @@ class EnemyFormations():
         return random.choice(possible_bosses)
 
     def get_random_wob_boss(self, exclude = None):
-        import random
+        import rng as random
         if exclude is None:
             return random.choice(self.wob_bosses)
 
@@ -137,7 +137,7 @@ class EnemyFormations():
         return random.choice(possible_bosses)
 
     def get_random_wor_boss(self, exclude = None):
-        import random
+        import rng as random
         if exclude is None:
             return random.choice(self.wor_bosses)
 

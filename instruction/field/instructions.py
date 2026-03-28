@@ -665,6 +665,7 @@ class ReturnIfEventBitSet(BranchIfEventBitSet):
 class BranchIfEventBitClear(_Branch):
     def __init__(self, event_bit, destination):
         self.event_bit = event_bit
+        event_bit = int(event_bit)
         event_bit_arg = event_bit.to_bytes(2, "little")
 
         super().__init__(0xc0, [event_bit_arg], destination)

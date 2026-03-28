@@ -18,7 +18,7 @@ def choice(seq):
 def sample(population, k):
     if type(population) == set:
         population = list(population)
-    return _generator.choice(population, k)
+    return _generator.choice(population, k, False)
 
 def shuffle(lst):
     _generator.shuffle(lst)

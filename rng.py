@@ -8,7 +8,7 @@ def seed(s):
     # convert string seed to deterministic integer for numpy
     hash_bytes = hashlib.sha256(s.encode()).digest()
     seed_int = int.from_bytes(hash_bytes[:16], byteorder='big')
-    _generator = np.random.default_rng(seed_int)
+    _generator = np.random.Generator(np.random.PCG64(seed_int))
 
 def choice(seq):
     if type(seq) == set:

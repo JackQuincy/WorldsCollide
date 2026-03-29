@@ -366,6 +366,14 @@ class Items():
             exclude = []
         exclude.extend(self.get_excluded())
 
+        # item type is a int and if there is a single int value random.choice will do a range from 0-n
+        # instead of picking it as an option
+        # so we need to make it a list so that it is interperted as an option instead of upper bound
+        if item_types is set:
+            item_types = list(item_types)
+        elif item_types is not list:
+            item_types = [item_types]
+
         try:
             # pick random type if multiple provided
             item_type = random.choice(item_types)

@@ -200,16 +200,39 @@ class Shops():
         number_shops_with_dried_meat = len(dried_meat_shops)
 
         import random
-        if number_shops_with_dried_meat > self.args.shop_dried_meat:
+        desired_dried_meat = self.args.shop_dried_meat
+        if self.args.shop_vanilla_dried_meat:
+            # We are guarenteeing Mobliz has dried meat so place one less
+            desired_dried_meat -= 1
+        if number_shops_with_dried_meat > desired_dried_meat:
             # too many shops have dried meat, randomly remove extras
-            for index in range(self.args.shop_dried_meat, number_shops_with_dried_meat):
+            for index in range(desired_dried_meat, number_shops_with_dried_meat):
                 random_shop = random.choice(dried_meat_shops)
                 random_shop.remove(dried_meat_id)
                 dried_meat_shops.remove(random_shop)
-        elif number_shops_with_dried_meat < self.args.shop_dried_meat:
+        elif number_shops_with_dried_meat < desired_dried_meat:
             # too few shops have dried meat, choose random shops and
             # add a dried meat if space, otherwise replace a random item with dried meat
-            for index in range(number_shops_with_dried_meat, self.args.shop_dried_meat):
+            for index in range(number_shops_with_dried_meat, desired_dried_meat):
+                random_shop = random.choice(no_dried_meat_shops)
+                if not random_shop.full():
+                    random_shop.append(dried_meat_id)
+                else:
+                    random_index = random.randrange(random_shop.item_count)
+                    random_shop.items[random_index] = dried_meat_id
+                no_dried_meat_shops.remove(random_shop)
+
+        if self.args.shop_vanilla_dried_meat:
+            # guarentee dried meat is in mobliz
+            mobliz_item_shop = self.shops[7]
+            if not mobliz_item_shop.contains(dried_meat_id):
+                if not mobliz_item_shop.full():
+                    mobliz_item_shop.append(dried_meat_id)
+                else:
+                    random_index = random.randrange(mobliz_item_shop.item_count)
+                    mobliz_item_shop.items[random_index] = dried_meat_id
+            elif desired_dried_meat > 0:
+                # if dried meat was already in mobliz we should place another
                 random_shop = random.choice(no_dried_meat_shops)
                 if not random_shop.full():
                     random_shop.append(dried_meat_id)

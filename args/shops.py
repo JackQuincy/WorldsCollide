@@ -34,6 +34,8 @@ def parse(parser):
 
     shops.add_argument("-sdm", "--shop-dried-meat", default = 1, type = int, choices = range(6), metavar = "COUNT",
                         help = "%(metavar)s shops will contain dried meat")
+    shops.add_argument("-svdm", "--shop-vanilla-dried-meat", action = "store_true",
+                       help = "Guarentee dried meat in WoB Mobliz")
     shops.add_argument("-npi", "--no-priceless-items", action = "store_true",
                        help = "Assign values to items which normally sell for 1 gold. Recommended with random inventory")
 
@@ -94,6 +96,8 @@ def flags(args):
 
     if args.shop_dried_meat != 1:
         flags += f" -sdm {args.shop_dried_meat}"
+    if args.shop_vanilla_dried_meat:
+        flags += " -svdm"
     if args.no_priceless_items:
         flags += " -npi"
 
@@ -164,6 +168,7 @@ def options(args):
         ("Price", price, "price"),
         ("Sell Fraction", sell_fraction, "sell_fraction"),
         ("Dried Meat", args.shop_dried_meat, "shop_dried_meat"),
+        ("Vanilla Dried Meat", args.shop_vanilla_dried_meat, "shop_vanilla_dried_meat"),
         ("No Priceless Items", args.no_priceless_items, "no_priceless_items"),
         ("No Breakable Rods", args.shops_no_breakable_rods, "shops_no_breakable_rods"),
         ("Expensive Rods", args.shops_expensive_breakable_rods, "shops_expensive_breakable_rods"),

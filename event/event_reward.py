@@ -1,4 +1,5 @@
 from enum import Flag, unique, auto
+from typing import Collection
 @unique
 class RewardType(Flag):
     NONE = auto()
@@ -15,14 +16,11 @@ class Reward:
         self.possible_types = possible_types
 
     def single_possible_type(self):
-        pt = self.possible_types
-        if pt & RewardType.CHARACTER == pt:
-            return True
-        if pt & RewardType.ESPER == pt:
-            return True
-        if pt & RewardType.ITEM == pt:
-            return True
-        return False
+        # python version difference -- in 3.9, "self.possible_types in RewardType" will only be true if there's a single reward and self.possible_types would not be a collection
+        # however, in python 3.12+, Collections of objects are also considered that object, so it would always be true even with multiple rewards, so we have to check the length
+        if (isinstance(self.possible_types, Collection)):
+            return len(self.possible_types) == 1
+        return self.possible_types in RewardType
 
     def __str__(self):
         result = f"{self.id} {self.type} {self.event.name()}"

@@ -10,4 +10,4 @@ def get_random_sprite_pose():
   palette = random.choice(list(id_palette.keys()))
   pose = random.choice(CHARACTER_POSES)
   
-  return (sprite, palette, pose)
+  return (int(sprite), int(palette), int(pose))

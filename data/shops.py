@@ -189,11 +189,16 @@ class Shops():
     def assign_dried_meats(self):
         dried_meat_id = self.items.get_id("Dried Meat")
         dried_meat_type = self.items.get_type(dried_meat_id)
+        excluded_shops = ["Figaro Castle WOR (Left)","Figaro Castle WOR (Right)","Phantom Train"]
 
         dried_meat_shops = []
         no_dried_meat_shops = []
+
         for shop in self.shops:
-            if shop.contains(dried_meat_id):
+            if shop.contains(dried_meat_id) and shop.name() in excluded_shops:
+                shop.remove(dried_meat_id)
+                no_dried_meat_shops.append(shop)
+            elif shop.contains(dried_meat_id):
                 dried_meat_shops.append(shop)
             elif shop.type == Shop.ITEM or shop.type == Shop.VENDOR:
                 no_dried_meat_shops.append(shop)
@@ -211,12 +216,17 @@ class Shops():
             # add a dried meat if space, otherwise replace a random item with dried meat
             for index in range(number_shops_with_dried_meat, self.args.shop_dried_meat):
                 random_shop = random.choice(no_dried_meat_shops)
+
+                while random_shop.name() in excluded_shops: # keep looping if shop is on the "bad" list
+                    random_shop = random.choice(no_dried_meat_shops)
+
                 if not random_shop.full():
                     random_shop.append(dried_meat_id)
                 else:
                     random_index = random.randrange(random_shop.item_count)
                     random_shop.items[random_index] = dried_meat_id
                 no_dried_meat_shops.remove(random_shop)
+                dried_meat_shops.append(random_shop)
 
     def no_dried_meat_phantom_train(self):
         # move dried meat from phantom train shop to a different shop

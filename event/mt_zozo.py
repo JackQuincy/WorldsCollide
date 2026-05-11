@@ -8,13 +8,7 @@ class MtZozo(Event):
         return self.characters.CYAN
 
     def init_rewards(self):
-        # if location gating mode, reward is esper/item
-        if self.args.location_gating1:
-            self.reward = self.add_reward(RewardType.ESPER | RewardType.ITEM)
-        elif self.args.no_free_characters_espers:
-            self.reward = self.add_reward(RewardType.ITEM)
-        else:
-            self.reward = self.add_reward(RewardType.CHARACTER | RewardType.ESPER | RewardType.ITEM)
+        self.reward = self.add_reward(RewardType.CHARACTER | RewardType.ESPER | RewardType.ITEM)
 
     def init_event_bits(self, space):
         space.write(

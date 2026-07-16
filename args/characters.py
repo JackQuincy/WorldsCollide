@@ -6,8 +6,9 @@ def parse(parser):
 
     characters.add_argument("-sal", "--start-average-level", action = "store_true",
                             help = "Recruited characters start at the average character level")
-    characters.add_argument("-stl", "--start-level", default = 3, type = int, choices = range(3, 100), metavar = "COUNT",
-                            help = "Start game at level %(metavar)s.")
+    characters.add_argument("-stl", "--start-level", default = [3, 3], type = int, choices = range(3, 100),
+                            nargs = "+", metavar = ("MIN", "MAX"),
+                            help = "Start game at a random level within the given range.")
     characters.add_argument("-sn", "--start-naked", action = "store_true",
                             help = "Recruited characters start with no equipment")
     characters.add_argument("-eu", "--equipable-umaro", action = "store_true",
@@ -17,6 +18,7 @@ def parse(parser):
                             help = "Each character stat set to random percent of original within given range ")
 
 def process(args):
+    args._process_min_max("start_level")
     args._process_min_max("character_stat_random_percent")
 
 def flags(args):
@@ -24,8 +26,8 @@ def flags(args):
 
     if args.start_average_level:
         flags += " -sal"
-    if args.start_level != 3:
-        flags += f" -stl {args.start_level}"
+    if args.start_level_min != 3 or args.start_level_max != 3:
+        flags += f" -stl {args.start_level_min} {args.start_level_max}"
     if args.start_naked:
         flags += " -sn"
     if args.equipable_umaro:
@@ -36,11 +38,12 @@ def flags(args):
     return flags
 
 def options(args):
+    start_level = f"{args.start_level_min}-{args.start_level_max}"
     character_stats = f"{args.character_stat_random_percent_min}-{args.character_stat_random_percent_max}%"
 
     return [
         ("Start Average Level", args.start_average_level, "start_average_level"),
-        ("Start Level", args.start_level, "start_level"),
+        ("Start Level", start_level, "start_level"),
         ("Start Naked", args.start_naked, "start_naked"),
         ("Equipable Umaro", args.equipable_umaro, "equipable_umaro"),
         ("Character Stats", character_stats, "character_stats"),

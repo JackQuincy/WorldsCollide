@@ -86,7 +86,9 @@ class Characters():
         for character in self.characters:
             character.init_level_factor = 0
 
-        characters_asm.set_starting_level(self.args.start_level)
+        import rng as random
+        start_level = random.randint(self.args.start_level_min, self.args.start_level_max)
+        characters_asm.set_starting_level(start_level)
 
     def stats_random_percent(self):
         import rng as random

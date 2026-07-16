@@ -72,6 +72,11 @@ class Arguments:
     def _process_min_max(self, arg_name):
         values = getattr(self, arg_name)
         if values:
+            if len(values) > 2:
+                self.parser.error(f"argument {arg_name}: expected one or two values")
+            if len(values) == 1:
+                values = [values[0], values[0]]
+                setattr(self, arg_name, values)
             if values[0] > values[1]:
                 values[0], values[1] = values[1], values[0]
             setattr(self, arg_name + "_min", values[0])

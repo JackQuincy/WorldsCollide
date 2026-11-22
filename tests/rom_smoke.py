@@ -24,6 +24,9 @@ EXTRA_FLAGS = [
     "-open",
     "-nfh -cg",
     "-nfh -sli -cg",
+    "-ccswr 0",
+    "-siswr 0",
+    "-ccswr 0 -siswr 0",
 ]
 
 # builds the real parser, then prints its on/off flags instead of parsing sys.argv

@@ -199,6 +199,8 @@ class Chests():
 
     def shuffle_indices(self, types, indices):
         import copy
+        eligible_ids = {chest.id for chest in self.chests}
+        indices = [index for index in indices if index in eligible_ids]
         chests_shuffle = list()
         for index in indices:
             chest = copy.deepcopy(self.all_chests[index])
@@ -242,7 +244,6 @@ class Chests():
         wob_chests += list(area_chests["Owzer's Mansion"])
         wob_chests += list(area_chests["Albrook Outside"])
         wob_chests += list(area_chests["Albrook Inside"])
-        wob_chests += list(area_chests["Albrook Dock"])
         wob_chests += list(area_chests["Maranda"])
         wob_chests += list(area_chests["Magitek Factory"])
         wob_chests += list(area_chests["Thamasa Outside"])
@@ -256,6 +257,7 @@ class Chests():
 
         # shuffle WoR
         wor_chests = list(area_chests["Narshe Mines WOR"])
+        wor_chests += list(area_chests["Albrook Dock"])
         wor_chests += list(area_chests["Figaro Castle Basement"])
         wor_chests += list(area_chests["South Figaro Cave WOR"])
         wor_chests += list(area_chests["South Figaro Outside WOR"])

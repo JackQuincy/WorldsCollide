@@ -190,9 +190,6 @@ class EnemyPacks():
         for index, boss in enumerate(wor_bosses_to_replace):
             self.event_boss_replacements[boss] = wor_bosses_possible[index]
 
-        # I don't think this is needed because phunbaba 3 should be in wor but just in case
-        self.phunbaba3_safety_check(wob_bosses_to_replace)
-
     def randomize_event_bosses(self):
         import args, random, objectives
         from constants.objectives.conditions import names as possible_condition_names

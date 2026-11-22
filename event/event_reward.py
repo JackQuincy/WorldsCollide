@@ -1,4 +1,5 @@
 from enum import Flag, unique, auto
+from typing import Collection
 @unique
 class RewardType(Flag):
     NONE = auto()
@@ -15,7 +16,7 @@ class Reward:
         self.possible_types = possible_types
 
     def single_possible_type(self):
-        return self.possible_types in RewardType
+        return self.possible_types in (RewardType.CHARACTER, RewardType.ESPER, RewardType.ITEM)
 
     def __str__(self):
         result = f"{self.id} {self.type} {self.event.name()}"
@@ -48,7 +49,9 @@ def choose_reward(possible_types, characters, espers, items):
 
     # tried all possible_rewards and none were available
     # probably running out of chars and espers and need to make item rewards possible for more events
-    assert(item_possible)
+    if not item_possible:
+        raise RuntimeError(f"choose_reward: no rewards available for types {possible_types}: "
+                           "characters/espers are exhausted and this slot does not allow items")
     return (items.get_good_random(), RewardType.ITEM)
 
 # Documentation from AtmaTek:

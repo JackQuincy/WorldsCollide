@@ -32,7 +32,13 @@ class MultipleCalls(_Instruction):
         return super().__str__(hex(self.address))
 
 class SelectParties(_Instruction):
-    def __init__(self, count, unmovable_characters = 0x0000):
+    def __init__(self, count, unmovable_characters=None):
+        # required characters (-rc/--require-characters) must not be moved out of the party they
+        # have been placed in.  the bitmask (bit n = character n) is read at instruction-build time
+        # (after arguments are parsed/resolved) so it does not depend on module import order.
+        if unmovable_characters is None:
+            import args
+            unmovable_characters = getattr(args, "required_character_unmovable", 0x0000)
         super().__init__(0x99, count, unmovable_characters.to_bytes(2, "little"))
 
     def __str__(self):
@@ -128,6 +134,31 @@ def AddItem(item, sound_effect = True):
         return AddItem(item), PlaySoundEffect(141)
     else:
         return AddItem(item)
+
+class _AddItems(_Instruction):
+    def __init__(self, item, count):
+        if isinstance(item, str):
+            from data.item_names import name_id
+            self.item = name_id[item]
+            self.item_name = item
+        else:
+            from data.item_names import id_name
+            self.item = item
+            self.item_name = id_name[item]
+        if count == 1:
+            super().__init__(0x80, self.item)
+        else:
+            super().__init__(0xB0, count, 0x80, self.item, 0xB1)
+
+    def __str__(self):
+        return super().__str__(f"'{self.item_name}'")
+
+def AddItems(item, count, sound_effect = True):
+    AddItems = type("AddItems", (_AddItems,), {})
+    if sound_effect:
+        return AddItems(item, count), PlaySoundEffect(141)
+    else:
+        return AddItems(item, count)
 
 class AddGP(_Instruction):
     MAX = 2 ** 16 - 1 # 2 bytes max value
@@ -521,6 +552,14 @@ class FadeOutSong(_Instruction):
     def __str__(self):
         return super().__str__(self.args[0])
 
+class FadeInPreviousSong(_Instruction):
+    # Fade in the previously faded out song (opcode 0xF3)
+    def __init__(self, fade_time):
+        super().__init__(0xf3, fade_time)
+
+    def __str__(self):
+        return super().__str__(self.args[0])
+
 class PlaySoundEffect(_Instruction):
     def __init__(self, sound_effect_id):
         self.sound_effect_id = sound_effect_id
@@ -601,7 +640,8 @@ class SetMapTiles(_Instruction):
 class SetEventBit(_Instruction):
     def __init__(self, event_bit):
         self.event_bit = event_bit
-        assert self.event_bit <= 0x6ff
+        if not 0 <= self.event_bit <= 0x6ff:
+            raise ValueError(f"SetEventBit: invalid event bit {hex(self.event_bit)}, must be within 0x000-0x6ff")
 
         opcode = 0xd0 + (self.event_bit // 0x100) * 2
         arg = self.event_bit & 0xff
@@ -613,7 +653,8 @@ class SetEventBit(_Instruction):
 class ClearEventBit(_Instruction):
     def __init__(self, event_bit):
         self.event_bit = event_bit
-        assert self.event_bit <= 0x6ff
+        if not 0 <= self.event_bit <= 0x6ff:
+            raise ValueError(f"ClearEventBit: invalid event bit {hex(self.event_bit)}, must be within 0x000-0x6ff")
 
         opcode = 0xd1 + (self.event_bit // 0x100) * 2
         arg = self.event_bit & 0xff

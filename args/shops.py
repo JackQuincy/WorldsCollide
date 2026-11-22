@@ -29,7 +29,7 @@ def parse(parser):
     shops_sell_fraction.add_argument("-ssf0", "--shop-sell-fraction0", action = "store_true",
                                      help = "Items sell for zero")
 
-    shops.add_argument("-sdm", "--shop-dried-meat", default = 1, type = int, choices = range(6), metavar = "COUNT",
+    shops.add_argument("-sdm", "--shop-dried-meat", default = 1, type = int, choices = range(11), metavar = "COUNT",
                         help = "%(metavar)s shops will contain dried meat")
     shops.add_argument("-npi", "--no-priceless-items", action = "store_true",
                        help = "Assign values to items which normally sell for 1 gold. Recommended with random inventory")
@@ -46,12 +46,17 @@ def parse(parser):
                        help = "Super Balls not sold in shops")
     shops.add_argument("-sesb", "--shops-expensive-super-balls", action = "store_true",
                        help = "Super Balls base price increase")
-    
+
+    shops.add_argument("-seri", "--shops-expensive-restorative-items", action="store_true",
+                       help = "Increase base price of most restorative items (Potions, Ethers, Tents, etc.)")
 
     shops.add_argument("-snee", "--shops-no-exp-eggs", action = "store_true",
                        help = "Exp. Eggs not sold in shops")
     shops.add_argument("-snil", "--shops-no-illuminas", action = "store_true",
                        help = "Illuminas not sold in shops")
+
+    shops.add_argument("-sli", "--shop-limited-inventory", action = "store_true",
+                       help = "Shops sell items in limited packs. Each item slot can only be bought once")
 
 def process(args):
     if args.shop_inventory_shuffle_random is not None:
@@ -101,10 +106,16 @@ def flags(args):
     if args.shops_expensive_super_balls:
         flags += " -sesb"
 
+    if args.shops_expensive_restorative_items:
+        flags += " -seri"
+
     if args.shops_no_exp_eggs:
         flags += " -snee"
     if args.shops_no_illuminas:
         flags += " -snil"
+
+    if args.shop_limited_inventory:
+        flags += " -sli"
 
     return flags
 
@@ -157,8 +168,10 @@ def options(args):
         ("No Elemental Shields", args.shops_no_elemental_shields, "shops_no_elemental_shields"),
         ("No Super Balls", args.shops_no_super_balls, "shops_no_super_balls"),
         ("Expensive Balls", args.shops_expensive_super_balls, "shops_expensive_super_balls"),
+        ("Expensive Restoratives", args.shops_expensive_restorative_items, "shops_expensive_restorative_items"),
         ("No Exp. Eggs", args.shops_no_exp_eggs, "shops_no_exp_eggs"),
         ("No Illuminas", args.shops_no_illuminas, "shops_no_illuminas"),
+        ("Limited Inventory", args.shop_limited_inventory, "shop_limited_inventory"),
     ])
     return result
 

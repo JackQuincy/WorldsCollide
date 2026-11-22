@@ -18,6 +18,8 @@ The repository is modular and structured as follows:
 - [args/](args/): Flag and argument parsing. Every gameplay subsystem has a corresponding file here (e.g. `items.py`, `bosses.py`, `scaling.py`).
 - [memory/](memory/): Core ROM memory abstractions. Manages memory range reservations, heap allocations, and bank writing.
 - [data/](data/): Data modeling representing ROM records (characters, items, spells, shops, bosses). Parses bytes into objects, modifies them, and writes them back.
+  - [enemies.py](data/enemies.py) shares random encounter traversal between global and per-world modes. Shuffle visits each pack once, while randomization keeps repeated zone references in draw order.
+  - [enemy_packs.py](data/enemy_packs.py) shares boss exclusions and formation assignment across both modes. The per-world boss pools in [bosses.py](data/bosses.py) follow story locations. Vanilla encounter pack classification uses the formation IDs in [enemy_formations.py](data/enemy_formations.py).
 - [instruction/](instruction/):
   - [asm.py](instruction/asm.py): Python wrappers for 65816 CPU assembly instructions.
   - [field/instructions.py](instruction/field/instructions.py): Python classes for SNES map event script bytecodes.

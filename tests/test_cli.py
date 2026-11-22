@@ -77,6 +77,40 @@ print("ok")
         self.assertEqual(result.returncode, 0, msg = result.stderr)
         self.assertIn("ok", result.stdout)
 
+class TestEncounterFlags(unittest.TestCase):
+    def test_world_random_flags_round_trip_and_menu(self):
+        script = """
+import argparse
+import sys
+
+sys.argv = ["wc.py", "-i", "rom.smc"]
+from args import encounters
+
+parser = argparse.ArgumentParser()
+encounters.parse(parser)
+for flags, expected in [
+    ("-rewr 0", [("Random", "WRandom"), ("Boss Percent", "0%"), ("Fixed", "Original")]),
+    ("-fewr 40", [("Random", "Original"), ("Fixed", "WRandom"), ("Boss Percent", "40%")]),
+    ("-rewr 25 -fewr 40", [("Random", "WRandom"), ("Boss Percent", "25%"),
+                           ("Fixed", "WRandom"), ("Boss Percent", "40%")]),
+]:
+    parsed = parser.parse_args(flags.split())
+    emitted = encounters.flags(parsed).strip()
+    assert emitted == flags, (flags, emitted)
+    assert parser.parse_args(emitted.split()) == parsed
+    _, options = encounters.menu(parsed)
+    assert [(key, value) for key, value, _ in options] == expected + [("Escapable", "Original")], options
+"""
+        result = subprocess.run(
+            [sys.executable, "-c", script],
+            cwd = REPO_ROOT,
+            capture_output = True,
+            text = True,
+            timeout = 60,
+        )
+        self.assertEqual(result.returncode, 0, msg = result.stderr)
+
+
 if __name__ == "__main__":
     unittest.main()
 

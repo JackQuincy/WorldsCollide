@@ -31,6 +31,8 @@ To verify ROM modifications and successfully run a seed generation test, a valid
 > - The `tests` directory also contains the committed unit test suite (`tests/test_*.py`); generated artifacts there are excluded from git via `.gitignore` (`*.smc`, `*.sfc`, `tests/*.txt`, `tests/*.json`).
 
 ### 1.4 Unit Tests
+For encounter changes, check that random and fixed boss percentages round-trip independently through the flag string and appear under their respective menu entries. When a flag takes a value, add it to `EXTRA_FLAGS` in `tests/rom_smoke.py` so the ROM smoke test exercises it.
+
 The `tests/` directory contains a unit test suite for the ROM-independent logic (memory allocation, label/branch encoding, compression, seeding, CLI parsing). It requires no ROM file:
 ```powershell
 python3 -m unittest discover -s tests -v

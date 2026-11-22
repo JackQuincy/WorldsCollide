@@ -160,6 +160,8 @@ normal_formation_name = {
     505 : "Kefka (Narshe)",
 }
 
+# Boss replacement pools follow story locations. PR #137 defines the same
+# World of Balance / World of Ruin split for event boss pack IDs.
 wob_formation_name = {
     4   : "Marshal",
     79  : "Rizopas",

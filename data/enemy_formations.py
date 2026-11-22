@@ -11,8 +11,6 @@ class EnemyFormations():
     ENEMIES_END = 0xf83bf
     ENEMIES_SIZE = 15
 
-    WOR_ENEMIES_START_INDEX = 192
-
     PHUNBABA3 = bosses.name_formation["Phunbaba 3"]
     DOOM_GAZE = bosses.name_formation["Doom Gaze"]
     ALL_STATUES = list(bosses.statue_formation_name)
@@ -40,8 +38,8 @@ class EnemyFormations():
                            *range(467, 472), *range(473, 476), 477, 481, 482, 484, 485, *range(487, 576)]
         non_normal_set = set(self.non_normal)
 
-        # the method for forming this list and the next was flawed/how it would be used wasn't understood.
-        # revisit and redefine these in a simpilier way.
+        # Vanilla encounter formation IDs used to classify random packs and split the
+        # normal replacement pool. Boss replacements use the story worlds in data.bosses.
         self.wob = [*range(0, 103), *range(104, 114), *range(115, 126), 135, 136,
                     *range(139, 171), *range(174, 192), 210, *range(356, 362),
                     *range(373, 384), *range(402, 409), *range(410,412), *range(416,420), 434, 479]

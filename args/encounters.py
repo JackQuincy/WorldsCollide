@@ -48,8 +48,8 @@ def flags(args):
         flags += " -rechu"
     elif args.random_encounters_world_shuffle:
         flags += " -rews"
-    elif args.fixed_encounters_world_random is not None:
-        flags += f" -rewr {args.fixed_encounters_world_random}"
+    elif args.random_encounters_world_random is not None:
+        flags += f" -rewr {args.random_encounters_world_random}"
 
     if args.fixed_encounters_random is not None:
         flags += f" -fer {args.fixed_encounters_random}"
@@ -74,14 +74,14 @@ def options(args):
         random_encounters = "Chupon"
     elif args.random_encounters_world_shuffle:
         random_encounters = "WShuffle"
-    elif args.fixed_encounters_world_random is not None:
+    elif args.random_encounters_world_random is not None:
         random_encounters = "WRandom"
 
     result.append(("Random Encounters", random_encounters, "random_encounters"))
     if args.random_encounters_random is not None:
         result.append(("Boss Percent", f"{args.random_encounters_random}%", "random_encounters_random"))
-    elif args.fixed_encounters_world_random is not None:
-        result.append(("Boss Percent", f"{args.fixed_encounters_world_random}%", "fixed_encounters_world_random"))
+    elif args.random_encounters_world_random is not None:
+        result.append(("Boss Percent", f"{args.random_encounters_world_random}%", "random_encounters_world_random"))
 
     fixed_encounters = "Original"
     if args.fixed_encounters_random is not None:
@@ -92,6 +92,8 @@ def options(args):
     result.append(("Fixed Encounters", fixed_encounters, "fixed_encounters"))
     if args.fixed_encounters_random is not None:
         result.append(("Boss Percent", f"{args.fixed_encounters_random}%", "fixed_encounters_random"))
+    elif args.fixed_encounters_world_random is not None:
+        result.append(("Boss Percent", f"{args.fixed_encounters_world_random}%", "fixed_encounters_world_random"))
 
     escapable = "Original"
     if args.encounters_escapable_random is not None:
